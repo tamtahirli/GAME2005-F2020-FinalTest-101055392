@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4264385306924965288}
   - component: {fileID: 3523184702289160692}
   - component: {fileID: 4103796281782616914}
+  - component: {fileID: 2327634665450720945}
   - component: {fileID: 2352156713619636600}
   m_Layer: 0
   m_Name: Bullet
@@ -40,7 +41,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2898771445226466676}
-  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!23 &4103796281782616914
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -82,6 +83,25 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &2327634665450720945
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2898771445226466676}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6e3ee23bdf47c64f83e775ee4fc0858, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gravityScale: 0
+  mass: 0
+  bodyType: 1
+  timer: 0
+  isFalling: 0
+  velocity: {x: 0, y: 0, z: 0}
+  acceleration: {x: 0, y: 0, z: 0}
 --- !u!114 &2352156713619636600
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -99,3 +119,8 @@ MonoBehaviour:
   range: 20
   radius: 0.05
   debug: 0
+  isColliding: 0
+  collisionNormal: {x: 0, y: 0, z: 0}
+  penetration: 0
+  bulletManager: {fileID: 0}
+  cubeComponent: {fileID: 0}

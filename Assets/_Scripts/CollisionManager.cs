@@ -11,6 +11,8 @@ public class CollisionManager : MonoBehaviour
 
     private static Vector3[] faces;
 
+    public AudioSource bounceSound;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -28,6 +30,7 @@ public class CollisionManager : MonoBehaviour
     void Update()
     {
         spheres = FindObjectsOfType<BulletBehaviour>();
+        cubes = FindObjectsOfType<CubeBehaviour>();
 
         // check each AABB with every other AABB in the scene
         for (int i = 0; i < cubes.Length; i++)
@@ -39,24 +42,14 @@ public class CollisionManager : MonoBehaviour
                     CheckAABBs(cubes[i], cubes[j]);
                 }
             }
-        }
-
-        // Check each sphere against each AABB in the scene
-        foreach (var sphere in spheres)
-        {
-            foreach (var cube in cubes)
+            foreach(var sphere in spheres)
             {
-                if (cube.name != "Player")
-                {
-                    CheckSphereAABB(sphere, cube);
-                }
-                
+                if(cubes[i].name != "Player")
+                    AABBCheck(sphere, cubes[i]);
             }
         }
 
-
     }
-
     public static void CheckSphereAABB(BulletBehaviour s, CubeBehaviour b)
     {
         // get box closest point to sphere center by clamping
@@ -98,7 +91,6 @@ public class CollisionManager : MonoBehaviour
             s.collisionNormal = face;
             //s.isColliding = true;
 
-            
             Reflect(s);
         }
 
@@ -120,7 +112,6 @@ public class CollisionManager : MonoBehaviour
             s.direction = new Vector3(s.direction.x, -s.direction.y, s.direction.z);
         }
     }
-
 
     public static void CheckAABBs(CubeBehaviour a, CubeBehaviour b)
     {
@@ -176,7 +167,26 @@ public class CollisionManager : MonoBehaviour
                     a.gameObject.GetComponent<RigidBody3D>().Stop();
                     a.isGrounded = true;
                 }
-                
+                if (a.name == "Player")
+                {
+                    if (contactB.face == Vector3.forward)
+                    {
+                        b.gameObject.transform.position += Vector3.forward;
+                    }
+                    else if (contactB.face == Vector3.back)
+                    {
+                        b.gameObject.transform.position -= Vector3.forward;
+                    }
+                    else if (contactB.face == Vector3.left)
+                    {
+                        b.gameObject.transform.position += Vector3.left;
+                    }
+                    else if (contactB.face == Vector3.right)
+                    {
+                        b.gameObject.transform.position += Vector3.right;
+                    }
+                }
+
 
                 // add the new contact
                 a.contacts.Add(contactB);
@@ -186,7 +196,6 @@ public class CollisionManager : MonoBehaviour
         }
         else
         {
-
             if (a.contacts.Exists(x => x.cube.gameObject.name == b.gameObject.name))
             {
                 a.contacts.Remove(a.contacts.Find(x => x.cube.gameObject.name.Equals(b.gameObject.name)));
@@ -199,5 +208,82 @@ public class CollisionManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    struct Manifold
+    {
+        public Vector3 normal;
+        public bool result;
+        public float depth;
+    }
+
+    private Manifold AABBCheck(BulletBehaviour Cube1, CubeBehaviour Cube2)
+    {
+        Manifold result = new Manifold();
+        GameObject a = Cube1.gameObject;
+        GameObject b = Cube2.gameObject;
+
+        MeshFilter aMF = a.GetComponent<MeshFilter>();
+        MeshFilter bMF = b.GetComponent<MeshFilter>();
+
+        Bounds aB = aMF.mesh.bounds;
+        Bounds bB = bMF.mesh.bounds;
+
+        var min1 = Vector3.Scale(aB.min, a.transform.localScale) + a.transform.position;
+        var max1 = Vector3.Scale(aB.max, a.transform.localScale) + a.transform.position;
+
+        var min2 = Vector3.Scale(bB.min, b.transform.localScale) + b.transform.position;
+        var max2 = Vector3.Scale(bB.max, b.transform.localScale) + b.transform.position;
+
+        if (!((min1.x <= max2.x && max1.x >= min2.x) &&
+            (min1.y <= max2.y && max1.y >= min2.y) &&
+            (min1.z <= max2.z && max1.z >= min2.z)))
+        {
+            result.result = false;
+            return result;
+        }
+
+        Vector3 pos1 = a.transform.position;
+        Vector3 pos2 = b.transform.position;
+        Vector3 size1 = a.transform.localScale;
+        Vector3 size2 = b.transform.localScale;
+
+        Vector3[] faces = new Vector3[6];
+        faces[0] = Vector3.left;
+        faces[1] = Vector3.right;
+        faces[2] = Vector3.down;
+        faces[3] = Vector3.up;
+        faces[4] = Vector3.back;
+        faces[5] = Vector3.forward;
+
+        float[] dists = new float[6];
+        dists[0] = max1.x - min2.x;
+        dists[1] = max2.x - min1.x;
+        dists[2] = max1.y - min2.y;
+        dists[3] = max2.y - min1.y;
+        dists[4] = max1.z - min2.z;
+        dists[5] = max2.z - min1.z;
+
+        float min = 9999.9f;
+        for (int i = 0; i < 6; i++)
+        {
+            if (dists[i] < min || i == 0)
+            {
+                result.normal = faces[i];
+                result.depth = dists[i];
+                min = dists[i];
+            }
+        }
+
+        result.result = true;
+
+        Cube1.collisionNormal = result.normal;
+        Cube1.penetration = result.depth;
+
+        Reflect(Cube1);
+        if(!bounceSound.isPlaying)
+            bounceSound.Play();
+
+        return result;
     }
 }
