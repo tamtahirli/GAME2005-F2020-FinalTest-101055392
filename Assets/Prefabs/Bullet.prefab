@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 2898771445226466676}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1.408, y: 1.057, z: -2.122}
-  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
+  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -123,4 +123,9 @@ MonoBehaviour:
   collisionNormal: {x: 0, y: 0, z: 0}
   penetration: 0
   bulletManager: {fileID: 0}
-  cubeComponent: {fileID: 0}
+  min: {x: 0, y: 0, z: 0}
+  max: {x: 0, y: 0, z: 0}
+  bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  contacts: []

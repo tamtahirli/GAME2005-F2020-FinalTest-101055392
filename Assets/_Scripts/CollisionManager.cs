@@ -11,8 +11,6 @@ public class CollisionManager : MonoBehaviour
 
     private static Vector3[] faces;
 
-    public AudioSource bounceSound;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -135,21 +133,18 @@ public class CollisionManager : MonoBehaviour
                 }
                 else if(rigidBody.bodyType == BodyType.DYNAMIC && a.name != "Player" && b.name != "Player")
                 {
-                    if (contactB.face == Vector3.forward)
+                    if (contactB.face == Vector3.forward || contactB.face == Vector3.back || contactB.face == Vector3.left
+                        || contactB.face == Vector3.right)
                     {
-                        b.gameObject.transform.position += Vector3.forward;
+                        b.gameObject.transform.position += contactB.face * pushSpeed;
                     }
-                    else if (contactB.face == Vector3.back)
+                }
+                else if(a.name == "Player" && rigidBody.bodyType == BodyType.STATIC)
+                {
+                    if (contactB.face == Vector3.forward || contactB.face == Vector3.back || contactB.face == Vector3.left
+                        || contactB.face == Vector3.right)
                     {
-                        b.gameObject.transform.position -= Vector3.forward;
-                    }
-                    else if (contactB.face == Vector3.left)
-                    {
-                        b.gameObject.transform.position += Vector3.left;
-                    }
-                    else if (contactB.face == Vector3.right)
-                    {
-                        b.gameObject.transform.position += Vector3.right;
+                        a.gameObject.transform.position += -contactB.face * pushSpeed;
                     }
                 }
 
@@ -246,8 +241,6 @@ public class CollisionManager : MonoBehaviour
         Cube1.penetration = result.depth;
 
         Reflect(Cube1);
-        if(!bounceSound.isPlaying)
-            bounceSound.Play();
 
         return result;
     }
