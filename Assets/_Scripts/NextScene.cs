@@ -11,6 +11,7 @@ public class NextScene : MonoBehaviour
 
     void Start()
     {
+        Time.timeScale = 1;
         playBtn.GetComponent<Button>().onClick.AddListener(OnClick);
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
