@@ -154,7 +154,8 @@ public class CollisionManager : MonoBehaviour
                     if (contactB.face == Vector3.forward || contactB.face == Vector3.back || contactB.face == Vector3.left
                         || contactB.face == Vector3.right)
                     {
-                        a.gameObject.transform.position += -contactB.face * backSpeed;
+                        var velocity = new Vector3(-contactB.face.x, backSpeed, -contactB.face.z);
+                        a.gameObject.transform.position += velocity * backSpeed;
                     }
                 }
 
