@@ -50,51 +50,6 @@ public class CollisionManager : MonoBehaviour
         }
 
     }
-    public static void CheckSphereAABB(BulletBehaviour s, CubeBehaviour b)
-    {
-        // get box closest point to sphere center by clamping
-        var x = Mathf.Max(b.min.x, Mathf.Min(s.transform.position.x, b.max.x));
-        var y = Mathf.Max(b.min.y, Mathf.Min(s.transform.position.y, b.max.y));
-        var z = Mathf.Max(b.min.z, Mathf.Min(s.transform.position.z, b.max.z));
-
-        var distance = Math.Sqrt((x - s.transform.position.x) * (x - s.transform.position.x) +
-                                 (y - s.transform.position.y) * (y - s.transform.position.y) +
-                                 (z - s.transform.position.z) * (z - s.transform.position.z));
-
-        if ((distance < s.radius) && (!s.isColliding))
-        {
-            // determine the distances between the contact extents
-            float[] distances = {
-                (b.max.x - s.transform.position.x),
-                (s.transform.position.x - b.min.x),
-                (b.max.y - s.transform.position.y),
-                (s.transform.position.y - b.min.y),
-                (b.max.z - s.transform.position.z),
-                (s.transform.position.z - b.min.z)
-            };
-
-            float penetration = float.MaxValue;
-            Vector3 face = Vector3.zero;
-
-            // check each face to see if it is the one that connected
-            for (int i = 0; i < 6; i++)
-            {
-                if (distances[i] < penetration)
-                {
-                    // determine the penetration distance
-                    penetration = distances[i];
-                    face = faces[i];
-                }
-            }
-
-            s.penetration = penetration;
-            s.collisionNormal = face;
-            //s.isColliding = true;
-
-            Reflect(s);
-        }
-
-    }
     
     // This helper function reflects the bullet when it hits an AABB face
     private static void Reflect(BulletBehaviour s)
@@ -112,6 +67,8 @@ public class CollisionManager : MonoBehaviour
             s.direction = new Vector3(s.direction.x, -s.direction.y, s.direction.z);
         }
     }
+
+    private static float pushSpeed = 0.1f;
 
     public static void CheckAABBs(CubeBehaviour a, CubeBehaviour b)
     {
@@ -161,13 +118,22 @@ public class CollisionManager : MonoBehaviour
                         a.contacts.RemoveAt(i);
                     }
                 }
+                var rigidBody = b.gameObject.GetComponent<RigidBody3D>();
 
                 if (contactB.face == Vector3.down)
                 {
-                    a.gameObject.GetComponent<RigidBody3D>().Stop();
+                    if(a.gameObject.GetComponent<RigidBody3D>() != null)
+                        a.gameObject.GetComponent<RigidBody3D>().Stop();
                     a.isGrounded = true;
                 }
-                if (a.name == "Player")
+
+                if (a.name == "Player" && rigidBody.bodyType == BodyType.DYNAMIC)
+                {
+                    Vector3 forward = new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z);
+                    b.gameObject.transform.position += forward * pushSpeed;
+                    rigidBody.velocity = forward * pushSpeed;
+                }
+                else if(rigidBody.bodyType == BodyType.DYNAMIC && a.name != "Player" && b.name != "Player")
                 {
                     if (contactB.face == Vector3.forward)
                     {
@@ -186,7 +152,6 @@ public class CollisionManager : MonoBehaviour
                         b.gameObject.transform.position += Vector3.right;
                     }
                 }
-
 
                 // add the new contact
                 a.contacts.Add(contactB);
