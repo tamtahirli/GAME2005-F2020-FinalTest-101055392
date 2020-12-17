@@ -10,7 +10,7 @@ public class PlayerBehaviour : MonoBehaviour
     public GameObject bullet;
     public int fireRate; 
     
-    public float walkingSpeed = 7.5f;
+    public float walkingSpeed = 2;
     public float jumpSpeed = 8.0f;
     public float gravity = 20.0f;
     Vector3 moveDirection = Vector3.zero;
@@ -70,10 +70,10 @@ public class PlayerBehaviour : MonoBehaviour
     {
         Vector3 forward = playerCam.transform.TransformDirection(Vector3.forward);
         Vector3 right = playerCam.transform.TransformDirection(Vector3.right);
-        float curSpeedX = canMove ? walkingSpeed * Input.GetAxis("Vertical") : 0;
-        float curSpeedY = canMove ? walkingSpeed * Input.GetAxis("Horizontal") : 0;
+        float curSpeedZ = canMove ? walkingSpeed * Input.GetAxis("Vertical") : 0;
+        float curSpeedX = canMove ? walkingSpeed * Input.GetAxis("Horizontal") : 0;
         float movementDirectionY = moveDirection.y;
-        moveDirection = (forward * curSpeedX) + (right * curSpeedY);
+        moveDirection = (forward * curSpeedZ) + (right * curSpeedX);
 
         if (Input.GetKey(KeyCode.Space) && canMove && isGrounded)
         {
@@ -91,6 +91,7 @@ public class PlayerBehaviour : MonoBehaviour
         }
         else
             moveDirection.y = 0;
+
         Vector3 moveDir = (moveDirection * Time.deltaTime);
 
         transform.position += moveDir;

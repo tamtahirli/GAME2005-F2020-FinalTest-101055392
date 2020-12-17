@@ -58,6 +58,12 @@ public class RigidBody3D : MonoBehaviour
                     transform.position += velocity;
                 }
             }
+            else
+            {
+                velocity.y = 0;
+                velocity += acceleration * 0.5f * timer * timer;
+                transform.position += velocity;
+            }
         }
     }
 

@@ -66,7 +66,8 @@ public class CollisionManager : MonoBehaviour
         }
     }
 
-    private static float pushSpeed = 0.1f;
+    private static float pushSpeed = 0.02f;
+    private static float backSpeed = 0.05f;
 
     public static void CheckAABBs(CubeBehaviour a, CubeBehaviour b)
     {
@@ -104,58 +105,63 @@ public class CollisionManager : MonoBehaviour
             contactB.face = face;
             contactB.penetration = penetration;
 
+            var rigidBody = b.gameObject.GetComponent<RigidBody3D>();
 
             // check if contact does not exist
             if (!a.contacts.Contains(contactB))
             {
+                bool found = false;
                 // remove any contact that matches the name but not other parameters
                 for (int i = a.contacts.Count - 1; i > -1; i--)
                 {
                     if (a.contacts[i].cube.name.Equals(contactB.cube.name))
                     {
                         a.contacts.RemoveAt(i);
+                        found = true;
                     }
                 }
-                var rigidBody = b.gameObject.GetComponent<RigidBody3D>();
 
-                if (contactB.face == Vector3.down)
+                if(!found)
+                {
+                    if (a.name == "Player" && rigidBody.bodyType == BodyType.DYNAMIC)
+                    {
+                        // Push objects away from player
+                        Vector3 forward = new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z);
+                        b.gameObject.transform.position += forward * pushSpeed * penetration;
+                        rigidBody.velocity = forward * pushSpeed;
+                    }
+                    else if (rigidBody.bodyType == BodyType.DYNAMIC && a.name != "Player" && b.name != "Player")
+                    {
+                        // Push objects away from each other
+                        if (contactB.face == Vector3.forward || contactB.face == Vector3.back || contactB.face == Vector3.left
+                            || contactB.face == Vector3.right)
+                        {
+                            rigidBody.velocity = contactB.face * pushSpeed;
+                        }
+                    }
+                }
+
+                if (contactB.face == Vector3.down && !a.isGrounded)
                 {
                     if(a.gameObject.GetComponent<RigidBody3D>() != null)
                         a.gameObject.GetComponent<RigidBody3D>().Stop();
                     a.isGrounded = true;
                 }
 
-                if (a.name == "Player" && rigidBody.bodyType == BodyType.DYNAMIC)
-                {
-                    // Push objects away from player
-                    Vector3 forward = new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z);
-                    b.gameObject.transform.position += forward * pushSpeed;
-                    rigidBody.velocity = forward * pushSpeed;
-                }
-                else if(rigidBody.bodyType == BodyType.DYNAMIC && a.name != "Player" && b.name != "Player")
-                {
-                    // Push objects away from each other
-                    if (contactB.face == Vector3.forward || contactB.face == Vector3.back || contactB.face == Vector3.left
-                        || contactB.face == Vector3.right)
-                    {
-                        b.gameObject.transform.position += contactB.face * pushSpeed;
-                        rigidBody.velocity = contactB.face * pushSpeed;
-                    }
-                }
-                else if(a.name == "Player" && rigidBody.bodyType == BodyType.STATIC)
+                if (a.name == "Player" && rigidBody.bodyType == BodyType.STATIC)
                 {
                     // Move player back so they can't collide with stairs.
                     if (contactB.face == Vector3.forward || contactB.face == Vector3.back || contactB.face == Vector3.left
                         || contactB.face == Vector3.right)
                     {
-                        a.gameObject.transform.position += -contactB.face * pushSpeed;
+                        a.gameObject.transform.position += -contactB.face * backSpeed;
                     }
                 }
 
                 // add the new contact
                 a.contacts.Add(contactB);
                 a.isColliding = true;
-                
+
             }
         }
         else
