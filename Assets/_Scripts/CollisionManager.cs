@@ -127,20 +127,24 @@ public class CollisionManager : MonoBehaviour
 
                 if (a.name == "Player" && rigidBody.bodyType == BodyType.DYNAMIC)
                 {
+                    // Push objects away from player
                     Vector3 forward = new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z);
                     b.gameObject.transform.position += forward * pushSpeed;
                     rigidBody.velocity = forward * pushSpeed;
                 }
                 else if(rigidBody.bodyType == BodyType.DYNAMIC && a.name != "Player" && b.name != "Player")
                 {
+                    // Push objects away from each other
                     if (contactB.face == Vector3.forward || contactB.face == Vector3.back || contactB.face == Vector3.left
                         || contactB.face == Vector3.right)
                     {
                         b.gameObject.transform.position += contactB.face * pushSpeed;
+                        rigidBody.velocity = contactB.face * pushSpeed;
                     }
                 }
                 else if(a.name == "Player" && rigidBody.bodyType == BodyType.STATIC)
                 {
+                    // Move player back so they can't collide with stairs.
                     if (contactB.face == Vector3.forward || contactB.face == Vector3.back || contactB.face == Vector3.left
                         || contactB.face == Vector3.right)
                     {
